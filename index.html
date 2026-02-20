@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastelaria | Cardápio Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .category-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .category-card.active {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.08);
+        }
+        .category-card.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: linear-gradient(to right, #ea580c, #f97316);
+            border-radius: 3px;
+        }
+        .menu-item {
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+        .stagger-4 { animation-delay: 0.2s; }
+        .stagger-5 { animation-delay: 0.25s; }
+        .stagger-6 { animation-delay: 0.3s; }
+        
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Container da imagem de fundo com gradiente */
+        .header-bg {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1604911965086-2b7398fa13f6?q=80&w=2000&auto=format&fit=crop'); /* Imagem de fundo de pastel */
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .header-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.3) 80%, white);
+            pointer-events: none;
+        }
+
+        /* Container do logo com fundo branco e borda */
+        .logo-wrapper {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid white;
+        }
+
+        /* Imagem do logo - mantém proporções e corta para o círculo */
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+    <!-- Header Section com imagem de fundo e gradiente -->
+    <header class="relative w-full">
+        <!-- Banner com imagem de fundo e gradiente -->
+        <div class="relative w-full h-48 sm:h-56 overflow-hidden">
+            <!-- Imagem de fundo com gradiente sobreposto -->
+            <div class="header-bg"></div>
+        </div>
+        
+        <!-- Logo Area - Posicionado sobre o banner -->
+        <div class="relative px-4 text-center pb-8">
+            <div class="flex flex-col items-center">
+                <!-- Container do logo com imagem do Imgur -->
+                <div class="-mt-12 mb-3 relative z-20">
+                    <div class="logo-wrapper">
+                        <img src="Assets/logo-banner.png" 
+                             alt="Pastelaria Logo" 
+                             class="logo-image"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/96x96?text=Pastel'">
+                    </div>
+                </div>
+                
+                <h1 class="text-3xl font-bold tracking-tight text-stone-900 serif">Pastelaria</h1>
+                <p class="text-xs text-stone-500 uppercase tracking-[0.25em] font-medium mt-1">Pastéis & Salgados</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Selector -->
+    <section class="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 py-3 px-4">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-center gap-2 sm:gap-3">
+                <!-- Category 1: Pastéis -->
+                <button onclick="selectCategory('pasteis')" 
+                        id="cat-pasteis"
+                        class="category-card relative flex flex-col items-center gap-1.5 group cursor-pointer p-2.5 rounded-xl active bg-stone-50">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-amber-100 to-orange-50 flex items-center justify-center shadow-sm transition-all group-hover:shadow-md">
+                        <i data-lucide="utensils" class="w-6 h-6 text-amber-700"></i>
+                    </div>
+                    <span class="text-[10px] font-semibold text-stone-800 uppercase tracking-wider">Pastéis</span>
+                </button>
+
+                <!-- Category 2: Salgados -->
+                <button onclick="selectCategory('salgados')" 
+                        id="cat-salgados"
+                        class="category-card relative flex flex-col items-center gap-1.5 group cursor-pointer p-2.5 rounded-xl bg-white hover:bg-stone-50">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center shadow-sm transition-all group-hover:shadow-md">
+                        <i data-lucide="sandwich" class="w-6 h-6 text-stone-600"></i>
+                    </div>
+                    <span class="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">Salgados</span>
+                </button>
+
+                <!-- Category 3: Bebidas -->
+                <button onclick="selectCategory('bebidas')" 
+                        id="cat-bebidas"
+                        class="category-card relative flex flex-col items-center gap-1.5 group cursor-pointer p-2.5 rounded-xl bg-white hover:bg-stone-50">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center shadow-sm transition-all group-hover:shadow-md">
+                        <i data-lucide="cup-soda" class="w-6 h-6 text-emerald-700"></i>
+                    </div>
+                    <span class="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">Bebidas</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Content Area -->
+    <main class="px-4 py-6 pb-20 max-w-md mx-auto">
+        <!-- Category Title -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 id="current-category-title" class="text-xl font-semibold text-stone-800 tracking-tight">Pastéis</h2>
+            <span id="item-count" class="text-xs text-stone-400 font-medium uppercase tracking-wide">27 itens</span>
+        </div>
+
+        <!-- Menu List -->
+        <div id="menu-container" class="flex flex-col">
+            <!-- Items will be injected here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Footer Info -->
+    <footer class="bg-white border-t border-stone-100 py-6 px-4 mt-4">
+        <div class="max-w-md mx-auto text-center space-y-3">
+ 
+       
+            <p class="text-[10px] text-stone-300 mt-2">© 2026 Pastelaria da Mary</p>
+        </div>
+    </footer>
+
+    <script>
+        // Menu Data - Pastelaria Brasileira (atualizado conforme solicitado)
+        const menuData = {
+            pasteis: [
+                // Simples - R$ 8,00
+                { id: 9991, name: "Simples", description: "", price: 0, tags: ["separator"], icon: "zap" },
+                { id: 1, name: "Carne", description: "Carne moída temperada", price: 8.00, tags: ["Simples"], icon: "utensils-crossed" },
+                { id: 2, name: "Queijo", description: "Queijo mussarela derretido", price: 8.00, tags: ["Simples", "Vegetariano"], icon: "utensils-crossed" },
+                { id: 3, name: "Frango", description: "Frango desfiado com tempero caseiro", price: 8.00, tags: ["Simples"], icon: "utensils-crossed" },
+                { id: 4, name: "Pizza", description: "Molho de tomate, queijo e orégano", price: 8.00, tags: ["Simples", "Vegetariano"], icon: "utensils-crossed" },
+                
+                // Separador visual (não é um item, mas será representado por um subtítulo)
+                { id: 9991, name: "COMBOS", description: "", price: 0, tags: ["separator"], icon: "zap" },
+                
+                // Combos - R$ 10,00
+                { id: 5, name: "Carne c/ Queijo", description: "Carne moída e mussarela derretida", price: 10.00, tags: ["Combo"], icon: "utensils-crossed" },
+                { id: 6, name: "Frango c/ Queijo", description: "Frango desfiado + queijo (adicional R$ 1,00)", price: 10.00, tags: ["Combo"], icon: "utensils-crossed" },
+                { id: 7, name: "Frango c/ Catupiry", description: "Frango desfiado com requeijão cremoso", price: 10.00, tags: ["Combo"], icon: "utensils-crossed" },
+                { id: 8, name: "Calabresa c/ Queijo", description: "Calabresa picante e mussarela", price: 10.00, tags: ["Combo"], icon: "utensils-crossed" },
+                { id: 9, name: "Frango c/ Queijo e Milho", description: "Frango, queijo e milho verde", price: 10.00, tags: ["Combo"], icon: "utensils-crossed" },
+                
+                { id: 9992, name: "✨ ESPECIAIS", description: "", price: 0, tags: ["separator"], icon: "star" },
+                
+                // Especiais - R$ 15,00
+                { id: 11, name: "Costela", description: "Costela desfiada temperada 12hs", price: 15.00, tags: ["Especial"], icon: "utensils-crossed" },
+                { id: 12, name: "Costela c/ Queijo", description: "Costela desfiada coberta com queijo", price: 15.00, tags: ["Especial"], icon: "utensils-crossed" },
+                { id: 13, name: "Bacon", description: "Bacon crocante (adicional R$ 1,00)", price: 15.00, tags: ["Especial"], icon: "utensils-crossed" },
+                { id: 14, name: "X-Tudo", description: "Carne, queijo, presunto, calabresa, frango, cheddar, catupiry e ovo", price: 15.00, tags: ["Especial", "Premium"], icon: "star" },
+                { id: 15, name: "Strogonoff de Frango", description: "Strogonoff cremoso com champignon", price: 15.00, tags: ["Especial"], icon: "utensils" },
+                { id: 16, name: "Carne Seca", description: "Carne seca desfiada (adicional queijo R$ 1,00)", price: 15.00, tags: ["Especial"], icon: "utensils-crossed" },
+                { id: 17, name: "Pernil", description: "Pernil desfiado com pele crocante", price: 15.00, tags: ["Especial"], icon: "utensils-crossed" },
+                { id: 18, name: "Pizza Especial", description: "Presunto, queijo, tomate, ovo cozido e azeitona", price: 15.00, tags: ["Especial", "Vegetariano"], icon: "utensils-crossed" },
+                { id: 19, name: "Palmito", description: "Palmito pupunha com tomate seco (adicional queijo R$ 1,00)", price: 15.00, tags: ["Especial", "Vegetariano"], icon: "utensils-crossed" },
+                
+                { id: 9993, name: "🍬 DOCES", description: "", price: 0, tags: ["separator"], icon: "heart" },
+                
+                // Doces - R$ 12,00 / 15,00
+                { id: 21, name: "Brigadeiro", description: "Chocolate meio amargo tradicional", price: 12.00, tags: ["Doce"], icon: "heart" },
+                { id: 22, name: "Prestígio", description: "Coco com leite condensado e chocolate", price: 12.00, tags: ["Doce"], icon: "heart" },
+                { id: 23, name: "Doce de Leite", description: "Doce de leite caseiro cremoso", price: 12.00, tags: ["Doce"], icon: "heart" },
+                { id: 24, name: "Brigadeiro c/ Morango", description: "Brigadeiro com morango fresco", price: 12.00, tags: ["Doce", "Fruta"], icon: "heart" },
+                { id: 25, name: "Banana c/ Canela", description: "Banana caramelizada com canela (adicional chocolate ou doce de leite R$ 1,00)", price: 12.00, tags: ["Doce", "Fruta"], icon: "apple" },
+                { id: 26, name: "Nutella", description: "Creme de avelã com chocolate", price: 15.00, tags: ["Doce", "Premium"], icon: "sparkles" }
+            ],
+            
+            
+            salgados: [
+                { id: 101, name: "Coxinha de Frango", description: "Massa tradicional recheada com frango e catupiry", price: 7.00, tags: ["Frito"], icon: "triangle" },
+                { id: 102, name: "Coxinha de Costela", description: "Recheada com costela desfiada", price: 9.00, tags: ["Frito", "Especial"], icon: "beef" },
+                { id: 103, name: "Risoles de Presunto/Queijo", description: "Massa leve com presunto e mussarela", price: 7.00, tags: ["Frito"], icon: "circle" },
+                { id: 104, name: "Risoles de Carne", description: "Recheado com carne moída temperada", price: 7.00, tags: ["Frito"], icon: "beef" },
+                { id: 105, name: "Bolinha de Queijo", description: "Queijo coalho empanado", price: 8.00, tags: ["Frito", "Vegetariano"], icon: "circle" },
+                { id: 106, name: "Kibe", description: "Trigo para quibe com carne e hortelã", price: 7.00, tags: ["Frito"], icon: "triangle" },
+                { id: 107, name: "Kibe c/ Requeijão", description: "Kibe recheado com requeijão cremoso", price: 8.00, tags: ["Frito"], icon: "triangle" },
+                { id: 108, name: "Esfiha de Carne", description: "Aberta com carne, tomate e cebola", price: 6.00, tags: ["Assado"], icon: "square" },
+                { id: 109, name: "Esfiha de Frango", description: "Aberta com frango desfiado", price: 6.00, tags: ["Assado"], icon: "square" },
+                { id: 110, name: "Enroladinho de Salsicha", description: "Massa folhada com salsicha", price: 6.00, tags: ["Assado"], icon: "zap" },
+                { id: 111, name: "Folhado de Calabresa", description: "Massa folhada com calabresa e queijo", price: 8.00, tags: ["Assado"], icon: "layers" },
+                { id: 112, name: "Pão de Queijo", description: "Tradicional mineiro (unidade)", price: 4.00, tags: ["Assado", "Vegetariano", "Sem Glúten"], icon: "disc" },
+                { id: 113, name: "Croquete de Carne", description: "Tradicional com tempero caseiro", price: 6.00, tags: ["Frito"], icon: "beef" }
+            ],
+            
+            bebidas: [
+                { id: 201, name: "Refrigerante Lata", description: "Coca, Guaraná, Sprite, Fanta (350ml)", price: 6.00, tags: ["Gelado"], icon: "cup-soda" },
+                { id: 202, name: "Refrigerante 600ml", description: "Coca ou Guaraná", price: 9.00, tags: ["Gelado"], icon: "cup-soda" },
+                { id: 203, name: "Água sem Gás", description: "500ml", price: 4.00, tags: [], icon: "droplet" },
+                { id: 204, name: "Água com Gás", description: "500ml", price: 5.00, tags: ["Gelado"], icon: "droplets" },
+                { id: 205, name: "Suco Natural Laranja", description: "Copo 300ml - fresco", price: 9.00, tags: ["Natural", "Gelado"], icon: "sun" },
+                { id: 206, name: "Suco Natural Maracujá", description: "Copo 300ml - fresco", price: 9.00, tags: ["Natural", "Gelado"], icon: "sun" },
+                { id: 207, name: "Suco Natural Limão", description: "Copo 300ml - fresco com hortelã", price: 8.00, tags: ["Natural", "Gelado"], icon: "sun" },
+                { id: 208, name: "Café Expresso", description: "Café forte e encorpado", price: 5.00, tags: ["Quente", "Café"], icon: "coffee" },
+                { id: 209, name: "Café com Leite", description: "50% café, 50% leite vaporizado", price: 6.00, tags: ["Quente", "Café"], icon: "cup" },
+                { id: 210, name: "Cappuccino", description: "Espresso, leite vaporizado e espuma", price: 8.00, tags: ["Quente", "Café"], icon: "cloud" },
+                { id: 211, name: "Chá Gelado", description: "Limão, pêssego ou mate natural (500ml)", price: 7.00, tags: ["Gelado", "Natural"], icon: "leaf" },
+                { id: 212, name: "Caldo de Cana", description: "Copo 300ml - fresco da roça", price: 6.00, tags: ["Natural", "Gelado"], icon: "cup-soda" },
+                { id: 213, name: "Água de Coco", description: "Copo 300ml natural", price: 7.00, tags: ["Natural", "Gelado"], icon: "droplet" }
+            ]
+        };
+
+        const categoryTitles = {
+            pasteis: "Pastéis",
+            salgados: "Salgados",
+            bebidas: "Bebidas"
+        };
+
+        let currentCategory = 'pasteis';
+
+        function selectCategory(category) {
+            if (currentCategory === category) return;
+            
+            currentCategory = category;
+            
+            // Update UI classes
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('active', 'bg-stone-50');
+                card.classList.add('bg-white');
+                const span = card.querySelector('span');
+                span.classList.remove('text-stone-800');
+                span.classList.add('text-stone-500');
+            });
+            
+            const activeCard = document.getElementById(`cat-${category}`);
+            activeCard.classList.add('active', 'bg-stone-50');
+            activeCard.classList.remove('bg-white');
+            activeCard.querySelector('span').classList.remove('text-stone-500');
+            activeCard.querySelector('span').classList.add('text-stone-800');
+            
+            // Update title
+            document.getElementById('current-category-title').textContent = categoryTitles[category];
+            
+            // Render items
+            renderMenu(category);
+        }
+
+        function renderMenu(category) {
+            const container = document.getElementById('menu-container');
+            const items = menuData[category];
+            
+            // Update count (ignorando separadores)
+            const itemCount = items.filter(item => !item.tags.includes('separator')).length;
+            document.getElementById('item-count').textContent = `${itemCount} itens`;
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Render items with stagger
+            items.forEach((item, index) => {
+                // Se for separador, renderiza de forma diferente
+                if (item.tags.includes('separator')) {
+                    const separator = document.createElement('div');
+                    separator.className = `menu-item ${index < 6 ? `stagger-${index+1}` : 'stagger-6'} py-3`;
+                    separator.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <div class="h-px flex-1 bg-gradient-to-r from-transparent to-stone-200"></div>
+                            <span class="text-sm font-bold text-stone-700 tracking-wider">${item.name}</span>
+                            <div class="h-px flex-1 bg-gradient-to-l from-transparent to-stone-200"></div>
+                        </div>
+                    `;
+                    container.appendChild(separator);
+                } else {
+                    const staggerClass = `stagger-${(index % 6) + 1}`;
+                    
+                    const card = document.createElement('div');
+                    card.className = `menu-item group cursor-default ${staggerClass}`;
+                    
+                    const tagsHtml = item.tags.length > 0 
+                        ? `<div class="flex gap-1.5 mt-1 flex-wrap">
+                            ${item.tags.map(tag => {
+                                const tagColors = {
+                                    'Vegetariano': 'bg-emerald-50 text-emerald-600',
+                                    'Sem Glúten': 'bg-amber-50 text-amber-600',
+                                    'Doce': 'bg-pink-50 text-pink-600',
+                                    'Especial': 'bg-purple-50 text-purple-600',
+                                    'Premium': 'bg-indigo-50 text-indigo-600',
+                                    'Simples': 'bg-stone-100 text-stone-600',
+                                    'Combo': 'bg-blue-50 text-blue-600',
+                                    'Frito': 'bg-orange-50 text-orange-600',
+                                    'Assado': 'bg-yellow-50 text-yellow-600',
+                                    'Natural': 'bg-teal-50 text-teal-600',
+                                    'Gelado': 'bg-cyan-50 text-cyan-600',
+                                    'Quente': 'bg-rose-50 text-rose-600',
+                                    'Fruta': 'bg-red-50 text-red-600'
+                                };
+                                const colorClass = tagColors[tag] || 'bg-stone-50 text-stone-600';
+                                return `<span class="text-[9px] uppercase tracking-wider font-semibold ${colorClass} px-2 py-0.5 rounded-full">${tag}</span>`;
+                            }).join('')}
+                           </div>`
+                        : '';
+                    
+                    // Get category-based icon color
+                    const iconColors = {
+                        pasteis: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100',
+                        salgados: 'text-orange-600 bg-orange-50 group-hover:bg-orange-100',
+                        bebidas: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100'
+                    };
+                    const iconColorClass = iconColors[category];
+                    
+                    card.innerHTML = `
+                        <div class="flex items-start gap-3 py-3.5 border-b border-stone-100 last:border-0 hover:bg-stone-50/50 rounded-lg transition-colors -mx-2 px-2">
+                            <div class="w-11 h-11 rounded-xl ${iconColorClass} flex items-center justify-center flex-shrink-0 transition-colors shadow-sm">
+                                <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 pt-0.5">
+                                <div class="flex justify-between items-baseline gap-2 mb-0.5">
+                                    <h3 class="font-semibold text-stone-800 text-[15px] leading-tight truncate group-hover:text-stone-900 transition-colors">${item.name}</h3>
+                                    <span class="font-bold text-stone-900 text-[16px] whitespace-nowrap tabular-nums tracking-tight">R$ ${item.price.toFixed(2)}</span>
+                                </div>
+                                <p class="text-[13px] text-stone-500 leading-snug line-clamp-2">${item.description}</p>
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                }
+            });
+            
+            // Refresh icons after DOM update
+            requestAnimationFrame(() => {
+                lucide.createIcons();
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize all icons
+            lucide.createIcons();
+            renderMenu('pasteis');
+        });
+    </script>
+</body>
+</html>
