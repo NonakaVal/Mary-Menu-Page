@@ -70,7 +70,6 @@
             object-fit: cover;
         }
 
-        /* Category selector bar (adaptado do primeiro código) */
         .category-strip {
             position: sticky;
             top: 0;
@@ -239,7 +238,6 @@
             color: #a8a29e;
             letter-spacing: 0.5px;
         }
-        /* Count indicator */
         .category-header {
             display: flex;
             justify-content: space-between;
@@ -281,7 +279,7 @@
     <!-- Category Selector Strip (5 categorias) -->
     <div class="category-strip">
         <div class="category-scroll">
-            <div class="category-chip active" id="chip-simples" onclick="selectCategory('simples')">
+            <div class="category-chip" id="chip-simples" onclick="selectCategory('simples')">
                 <div class="chip-icon" style="background: #fde9d7; color: #b45309;"><i data-lucide="utensils" width="18" height="18"></i></div>
                 <span class="chip-label">Simples</span>
             </div>
@@ -306,14 +304,15 @@
 
     <!-- Cabeçalho dinâmico da categoria + contador -->
     <div class="category-header">
-        <h2 id="current-category-title" class="cat-title">Simples</h2>
-        <span id="item-count" class="item-count-badge">27 itens</span>
+        <h2 id="current-category-title" class="cat-title">Carregando...</h2>
+        <span id="item-count" class="item-count-badge">0 itens</span>
     </div>
 
     <!-- Conteúdo Principal: Menu injetado via JS -->
     <main class="max-w-md mx-auto pb-8">
         <div id="menu-container" class="menu-card">
             <!-- Itens serão inseridos aqui pelo JavaScript -->
+            <div class="text-center py-8 text-stone-400">Carregando cardápio...</div>
         </div>
     </main>
 
@@ -401,14 +400,22 @@
         let currentCategory = 'simples';
 
         function selectCategory(category) {
-            if (currentCategory === category) return;
-
-            // update active chip
-            document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
-            document.getElementById(`chip-${category}`).classList.add('active');
-
+            // Atualiza a categoria atual
             currentCategory = category;
+            
+            // Atualiza o título
             document.getElementById('current-category-title').textContent = categoryTitles[category];
+            
+            // Atualiza os chips ativos
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            const activeChip = document.getElementById(`chip-${category}`);
+            if (activeChip) {
+                activeChip.classList.add('active');
+            }
+            
+            // Renderiza o menu
             renderMenu(category);
         }
 
@@ -416,18 +423,24 @@
             const container = document.getElementById('menu-container');
             const items = menuData[category];
             
-            // Count real items (exclude separators)
-            const realCount = items.filter(it => !it.tags.includes('separator')).length;
+            if (!items) {
+                console.error('Categoria não encontrada:', category);
+                return;
+            }
+            
+            // Conta itens reais (exclui separadores)
+            const realCount = items.filter(it => !it.tags || !it.tags.includes('separator')).length;
             document.getElementById('item-count').textContent = `${realCount} itens`;
 
+            // Limpa o container
             container.innerHTML = '';
 
             let itemIndex = 0;
             items.forEach((item, idx) => {
-                if (item.tags.includes('separator')) {
-                    // render separator
+                if (item.tags && item.tags.includes('separator')) {
+                    // Renderiza separador
                     const sepDiv = document.createElement('div');
-                    sepDiv.className = `section-title animate-in stagger-${(idx % 6) + 1}`;
+                    sepDiv.className = `section-title stagger-${(idx % 6) + 1}`;
                     sepDiv.innerHTML = `${item.name}`;
                     container.appendChild(sepDiv);
                 } else {
@@ -435,9 +448,9 @@
                     itemIndex++;
 
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = `menu-item animate-in ${stagger}`;
+                    itemDiv.className = `menu-item ${stagger}`;
 
-                    // tags HTML
+                    // Tags HTML
                     const tagsHtml = (item.tags && item.tags.length) ? 
                         `<div class="item-tags">${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : '';
 
@@ -455,16 +468,28 @@
                     container.appendChild(itemDiv);
                 }
             });
-
-            // Re-initialize lucide icons (if any icon inside menu? no, but keep for consistency)
-            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Ensure active chip is 'simples'
+        // Função de inicialização
+        function initApp() {
+            console.log('Inicializando aplicação...');
+            
+            // Inicializa os ícones do Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Seleciona a categoria inicial (simples)
             selectCategory('simples');
-        });
+        }
+
+        // Garante que a inicialização aconteça após o carregamento do DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM já está carregado
+            initApp();
+        }
     </script>
 </body>
 </html>
